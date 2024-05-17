@@ -1,0 +1,9 @@
+*.tif
+*.tiff
+*.png
+*.csv
+*.geojson
+*.h5
+*.pkl
+GEDI_analysis/GEDI_data/
+notebook/boreal_agb_density_ICESat2_tiles_shp
