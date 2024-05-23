@@ -188,6 +188,14 @@ def extract_patches(tile_name, year, tile_geom, patch_size, chunk_size, path_ged
             # Reproject and upsample the S2 bands            
             try: 
                 transform, upsampling_shape, processed_bands, crs_2, bounds = process_S2_tile(s2_prod, path_s2 = unzipped_path)
+            except IndexError:
+                unzipped_path = join(path_s2, 'scratch2', 'gsialelli', 'S2_L2A', 'Siberia')
+                try:
+                    transform, upsampling_shape, processed_bands, crs_2, bounds = process_S2_tile(s2_prod, path_s2 = unzipped_path)
+                except Exception as e:
+                    print(f'>> Could not process product {s2_prod}.')
+                    print(e)
+                    continue
             except Exception as e:
                 print(f'>> Could not process product {s2_prod}.')
                 print(e)
@@ -226,9 +234,14 @@ def extract_patches(tile_name, year, tile_geom, patch_size, chunk_size, path_ged
 
                 # Write the results to file and reset the placeholders
                 num_patches = len(gedi_data['agbd'])
-                if (num_patches % chunk_size) == 0 :
-                    save_results(s2_data, gedi_data, bm_data, tile_name, chunk_size, file)
-                    s2_data, gedi_data, bm_data = initialize_results(BM_flag)
+
+                #outlier exclusion
+                print("legth of gedi_data[agbd]", len(gedi_data['agbd']))
+                print(gedi_data['agbd'])
+                if gedi_data['agbd'][0] < 500:
+                    if (num_patches % chunk_size) == 0 :
+                        save_results(s2_data, gedi_data, bm_data, tile_name, chunk_size, file)
+                        s2_data, gedi_data, bm_data = initialize_results(BM_flag)
 
             # Remove the unzipped S2 product
             rmtree(join(unzipped_path, s2_prod + '.SAFE'))

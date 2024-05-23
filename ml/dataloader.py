@@ -277,7 +277,7 @@ class GEDIDataset(Dataset):
             
             # Get the bands
             s2_bands = f[tile_name]['S2_bands'][idx, self.center - self.window_size : self.center + self.window_size + 1, self.center - self.window_size : self.center + self.window_size + 1, :].astype(np.float32)
-            
+
             # Get the BOA offset, if it exists
             if 'S2_boa_offset' in f[tile_name]['Sentinel_metadata'].keys() : 
                 s2_boa_offset = f[tile_name]['Sentinel_metadata']['S2_boa_offset'][idx]
@@ -289,7 +289,6 @@ class GEDIDataset(Dataset):
             sr_bands[sr_bands < 0] = 0
             s2_bands = sr_bands
 
-            # Normalize the bands
             s2_bands = normalize_bands(s2_bands, self.norm_values['S2_bands'], self.s2_order, self.norm_strat, NODATAVALS['S2_bands'])
             s2_bands = s2_bands[:, :, self.s2_indices]
 
@@ -313,7 +312,6 @@ class GEDIDataset(Dataset):
             bm_std = normalize_data(bm_std, self.norm_values['BM']['std'], self.norm_strat, NODATAVALS['BM'])
 
             data.extend([bm[..., np.newaxis], bm_std[..., np.newaxis]])
-        
         # Concatenate the data together
         data = torch.from_numpy(np.concatenate(data, axis = -1).swapaxes(-1, 0)).to(torch.float)
 
@@ -359,10 +357,13 @@ if __name__ == '__main__' :
         print('starting to iterate...')
         i = 0
         for batch_samples in data_loader:
-
-            # if i % 10 == 0 : print(i)
+            images, targets = batch_samples
+            # if i == 0 : 
+                
+            #     # print(images)
+            #     # print(targets)
             # i += 1
-            images, _ = batch_samples
+            
             
             # Check for NaN values
             if torch.isnan(images).any() : 
